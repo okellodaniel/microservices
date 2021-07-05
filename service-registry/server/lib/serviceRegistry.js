@@ -4,7 +4,7 @@ class ServiceRegistry {
   constructor(log) {
     this.log = log;
     this.services = {};
-    this.timeout = 30;
+    this.timeout = 10;
   }
 
   // Querying the registry
@@ -21,6 +21,7 @@ class ServiceRegistry {
   // service can be uniquely identified by its name, version, ip and port
 
   register(name, version, ip, port) {
+    this.cleanup();
     const key = name + version + ip + port;
 
     // If a service that is  new and is not part of the services array
@@ -46,6 +47,16 @@ class ServiceRegistry {
     delete this.services[key];
     return key;
   }
+
+
+  cleanup(){
+    const now = Math.floor(new Date() / 1000);
+    Object.keys(this.services).forEach((key) => {
+      if(this.services[key].timestamp  + this.timeout < now){
+        delete this.services[key];
+        this.log.debug(`Removed service ${key}`)
+      }
+  })
 }
 
 module.exports = ServiceRegistry;
